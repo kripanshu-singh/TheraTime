@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Container, Typography, Card, Button, AppBar, Toolbar, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, CircularProgress } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
+import InboxIcon from '@mui/icons-material/Inbox';
 import axios from 'axios';
 import PayrollModal from './PayrollModal';
 
@@ -101,7 +102,17 @@ const ManagerDashboard = ({ user, onLogout }) => {
                 </TableRow>
               ) : pending.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">No pending timesheets</TableCell>
+                  <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: 0.6 }}>
+                      <InboxIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                      <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 500 }}>
+                        No pending timesheets
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        All caught up! New submissions will appear here.
+                      </Typography>
+                    </Box>
+                  </TableCell>
                 </TableRow>
               ) : (
                 pending.map((t) => (
