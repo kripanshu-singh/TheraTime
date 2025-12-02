@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: theratime-backend
+    env: docker
+    plan: free
+    branch: main
+    envVars:
+      - key: APP_CORS_ALLOWED_ORIGINS
+        sync: false
