@@ -11,7 +11,7 @@ const ManagerDashboard = ({ user, onLogout }) => {
 
   const fetchPending = async () => {
     try {
-      const res = await axios.get('http://localhost:8082/api/timesheets/pending');
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/timesheets/pending`);
       setPending(res.data);
     } catch (err) {
       console.error(err);
@@ -24,7 +24,7 @@ const ManagerDashboard = ({ user, onLogout }) => {
 
   const handleApprove = async (id) => {
     try {
-      await axios.post(`http://localhost:8082/api/timesheets/approve/${id}`);
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/api/timesheets/approve/${id}`);
       fetchPending();
     } catch (err) {
       alert('Error approving timesheet');
@@ -33,7 +33,7 @@ const ManagerDashboard = ({ user, onLogout }) => {
 
   const handleGeneratePayroll = async () => {
     try {
-      const res = await axios.get('http://localhost:8082/api/payroll/generate');
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/payroll/generate`);
       setPayload(res.data);
       setModalOpen(true);
     } catch (err) {

@@ -5,7 +5,7 @@ import axios from 'axios';
 const LoginScreen = ({ setUser }) => {
   const handleLogin = async (email) => {
     try {
-      const response = await axios.post('http://localhost:8082/api/auth/login', { email });
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/auth/login`, { email });
       setUser(response.data);
     } catch (error) {
       console.error('Login failed', error);

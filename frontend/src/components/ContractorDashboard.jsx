@@ -11,7 +11,7 @@ const ContractorDashboard = ({ user, onLogout }) => {
 
   const fetchTimesheets = async () => {
     try {
-      const res = await axios.get(`http://localhost:8082/api/timesheets/user/${user.id}`);
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/timesheets/user/${user.id}`);
       setTimesheets(res.data);
     } catch (err) {
       console.error(err);
@@ -25,7 +25,7 @@ const ContractorDashboard = ({ user, onLogout }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`http://localhost:8082/api/timesheets/submit/${user.id}`, {
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/api/timesheets/submit/${user.id}`, {
         date,
         hours: parseFloat(hours),
         notes
