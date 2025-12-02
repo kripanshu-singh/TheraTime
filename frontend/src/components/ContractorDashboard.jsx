@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Typography, Card, TextField, Button, Grid, Chip, AppBar, Toolbar, IconButton } from '@mui/material';
+import { Box, Container, Typography, Card, TextField, Button, Grid, Chip, AppBar, Toolbar, IconButton, CircularProgress } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import axios from 'axios';
 
@@ -8,13 +8,18 @@ const ContractorDashboard = ({ user, onLogout }) => {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
   const [timesheets, setTimesheets] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchTimesheets = async () => {
+    setLoading(true);
     try {
       const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/timesheets/user/${user.id}`);
       setTimesheets(res.data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -24,6 +29,7 @@ const ContractorDashboard = ({ user, onLogout }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       await axios.post(`${import.meta.env.VITE_BASE_URL}/api/timesheets/submit/${user.id}`, {
         date,
@@ -35,6 +41,8 @@ const ContractorDashboard = ({ user, onLogout }) => {
       fetchTimesheets();
     } catch (err) {
       alert('Error submitting timesheet: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -84,25 +92,39 @@ const ContractorDashboard = ({ user, onLogout }) => {
                   onChange={(e) => setNotes(e.target.value)}
                   sx={{ mb: 2 }}
                 />
-                <Button fullWidth variant="contained" type="submit">Submit</Button>
+                <Button 
+                  fullWidth 
+                  variant="contained" 
+                  type="submit"
+                  disabled={submitting}
+                  startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : null}
+                >
+                  {submitting ? 'Submitting...' : 'Submit'}
+                </Button>
               </form>
             </Card>
           </Grid>
           <Grid item xs={12} md={7}>
             <Typography variant="h6" gutterBottom>Recent Submissions</Typography>
-            {timesheets.map((t) => (
-              <Card key={t.id} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box>
-                  <Typography variant="subtitle1">{t.date}</Typography>
-                  <Typography variant="body2" color="text.secondary">{t.hours} Hours • {t.notes}</Typography>
-                </Box>
-                <Chip 
-                  label={t.status} 
-                  color={t.status === 'APPROVED' ? 'success' : t.status === 'PENDING' ? 'warning' : 'error'} 
-                  size="small" 
-                />
-              </Card>
-            ))}
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              timesheets.map((t) => (
+                <Card key={t.id} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box>
+                    <Typography variant="subtitle1">{t.date}</Typography>
+                    <Typography variant="body2" color="text.secondary">{t.hours} Hours • {t.notes}</Typography>
+                  </Box>
+                  <Chip 
+                    label={t.status} 
+                    color={t.status === 'APPROVED' ? 'success' : t.status === 'PENDING' ? 'warning' : 'error'} 
+                    size="small" 
+                  />
+                </Card>
+              ))
+            )}
           </Grid>
         </Grid>
       </Container>

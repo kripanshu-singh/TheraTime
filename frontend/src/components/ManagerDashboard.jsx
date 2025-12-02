@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Typography, Card, Button, AppBar, Toolbar, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip } from '@mui/material';
+import { Box, Container, Typography, Card, Button, AppBar, Toolbar, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, CircularProgress } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import axios from 'axios';
 import PayrollModal from './PayrollModal';
@@ -8,13 +8,19 @@ const ManagerDashboard = ({ user, onLogout }) => {
   const [pending, setPending] = useState([]);
   const [payload, setPayload] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [processingId, setProcessingId] = useState(null);
+  const [generating, setGenerating] = useState(false);
 
   const fetchPending = async () => {
+    setLoading(true);
     try {
       const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/timesheets/pending`);
       setPending(res.data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -23,21 +29,27 @@ const ManagerDashboard = ({ user, onLogout }) => {
   }, []);
 
   const handleApprove = async (id) => {
+    setProcessingId(id);
     try {
       await axios.post(`${import.meta.env.VITE_BASE_URL}/api/timesheets/approve/${id}`);
       fetchPending();
     } catch (err) {
       alert('Error approving timesheet');
+    } finally {
+      setProcessingId(null);
     }
   };
 
   const handleGeneratePayroll = async () => {
+    setGenerating(true);
     try {
       const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/payroll/generate`);
       setPayload(res.data);
       setModalOpen(true);
     } catch (err) {
       alert('Error generating payroll');
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -57,8 +69,14 @@ const ManagerDashboard = ({ user, onLogout }) => {
       <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h5">Pending Approvals</Typography>
-          <Button variant="contained" color="primary" onClick={handleGeneratePayroll}>
-            Generate Payroll Payload
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleGeneratePayroll}
+            disabled={generating}
+            startIcon={generating ? <CircularProgress size={20} color="inherit" /> : null}
+          >
+            {generating ? 'Generating...' : 'Generate Payroll Payload'}
           </Button>
         </Box>
 
@@ -75,7 +93,13 @@ const ManagerDashboard = ({ user, onLogout }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {pending.length === 0 ? (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                    <CircularProgress />
+                  </TableCell>
+                </TableRow>
+              ) : pending.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center">No pending timesheets</TableCell>
                 </TableRow>
@@ -88,8 +112,14 @@ const ManagerDashboard = ({ user, onLogout }) => {
                     <TableCell>{t.notes}</TableCell>
                     <TableCell><Chip label={t.status} color="warning" size="small" /></TableCell>
                     <TableCell align="right">
-                      <Button size="small" variant="contained" onClick={() => handleApprove(t.id)}>
-                        Approve
+                      <Button 
+                        size="small" 
+                        variant="contained" 
+                        onClick={() => handleApprove(t.id)}
+                        disabled={processingId === t.id}
+                        startIcon={processingId === t.id ? <CircularProgress size={16} color="inherit" /> : null}
+                      >
+                        {processingId === t.id ? 'Approving...' : 'Approve'}
                       </Button>
                     </TableCell>
                   </TableRow>
